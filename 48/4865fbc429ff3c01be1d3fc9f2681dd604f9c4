@@ -1,0 +1,79 @@
+.gitignore
+  s_8b84d8a3e72784::t_9e53adbfa4d5be 4-5
+  s_8b84d8a3e72784::t_21dd7b3f1c1a97 2
+  s_8b84d8a3e72784::t_ffa8cc8d8efc87 1
+  s_8b84d8a3e72784::t_38b5f9370be9e3 3
+scripts/build.sh
+  s_8b84d8a3e72784::t_d102ad6723b4c3 4-6,9-11,13-25
+  s_8b84d8a3e72784::t_9eb11c4f3e74d8 7-8,12
+  s_8b84d8a3e72784::t_f43a14ba7ca582 1-3
+  s_8b84d8a3e72784::t_960142c4f5c67f 26
+scripts/make-icon.swift
+  s_8b84d8a3e72784::t_d102ad6723b4c3 1-8,14-23,25-28
+  s_8b84d8a3e72784::t_52ddbd08cf0810 9-13,24
+scripts/package-dmg.sh
+  s_8b84d8a3e72784::t_d102ad6723b4c3 1-4,7-10,12-15,17-18,23
+  s_8b84d8a3e72784::t_9eb11c4f3e74d8 5-6,11,16
+  s_8b84d8a3e72784::t_0aec4630e6e34d 19-22
+Sources/TapPanel.swift
+  s_8b84d8a3e72784::t_0e93c85d7c4ac0 1-28,31-142
+  s_8b84d8a3e72784::t_9eb11c4f3e74d8 29-30
+.github/workflows/build.yml
+  s_8b84d8a3e72784::t_be4ad2d8273dc0 1-38
+CHANGELOG.md
+  s_8b84d8a3e72784::t_be4ad2d8273dc0 1-13
+README.md
+  s_8b84d8a3e72784::t_37c27063314f6d 1-8,10,12-18,20-50,52-53,65-96,148-151
+  s_8b84d8a3e72784::t_9e53adbfa4d5be 9,11,19,97-147
+  s_8b84d8a3e72784::t_df4f7f30c250d2 51,54
+  s_8b84d8a3e72784::t_a6a4265bb9b56c 55-64
+Tests/test_version.py
+  s_8b84d8a3e72784::t_be4ad2d8273dc0 1-45
+Resources/安装与使用.txt
+  s_8b84d8a3e72784::t_d102ad6723b4c3 2-9,12-28,31-32
+  s_8b84d8a3e72784::t_9eb11c4f3e74d8 1,10-11,29-30
+Sources/TapRunner.swift
+  s_8b84d8a3e72784::t_84967929c640a2 1-9,11-87,97-166,168-169
+  s_8b84d8a3e72784::t_9eb11c4f3e74d8 10,88-96
+  s_8b84d8a3e72784::t_1d1989cf2a0d17 167
+Sources/AppDelegate.swift
+  s_8b84d8a3e72784::t_0e93c85d7c4ac0 1-7,9-54,60-100,102-110,118-120,122-131,133-139,141-147,149-159
+  s_8b84d8a3e72784::t_9eb11c4f3e74d8 8,55-59,101,111-117,121,132,140,148
+Sources/AccessibilityPermission.swift
+  s_8b84d8a3e72784::t_9eb11c4f3e74d8 1-30
+Sources/KeyboardOutput.swift
+  s_8b84d8a3e72784::t_84967929c640a2 1-32
+Resources/Info.plist
+  s_8b84d8a3e72784::t_d102ad6723b4c3 4-13
+  s_8b84d8a3e72784::t_70f0be700667de 1-3,14
+Tests/RunnerChecks.swift
+  s_8b84d8a3e72784::t_9eb11c4f3e74d8 67-74,126-127,133-139,166
+  s_8b84d8a3e72784::t_d102ad6723b4c3 1-66,75-125,128-132,140-165,167-168
+Sources/main.swift
+  s_8b84d8a3e72784::t_0e93c85d7c4ac0 3-4
+  s_8b84d8a3e72784::t_2b5ef977d3deae 1-2,5-10
+.github/workflows/ci.yml
+  s_8b84d8a3e72784::t_be4ad2d8273dc0 1-14
+.github/workflows/release.yml
+  s_8b84d8a3e72784::t_be4ad2d8273dc0 1-102
+Sources/TapSettings.swift
+  s_8b84d8a3e72784::t_84967929c640a2 1-51
+scripts/version.py
+  s_8b84d8a3e72784::t_be4ad2d8273dc0 1-103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "484865fbc429ff3c01be1d3fc9f2681dd604f9c4",
+  "prompts": {},
+  "sessions": {
+    "s_8b84d8a3e72784": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ed22-e61a-7aa1-be46-6666153c521a",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "huangwei <huangwei501@xiaohongshu.com>"
+    }
+  }
+}
