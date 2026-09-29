@@ -1,0 +1,32 @@
+README.md
+  s_8b84d8a3e72784::t_7c69d411608ff8 19,102-108,110-116
+  s_8b84d8a3e72784::t_42076bbab9d64b 109,163-165
+CHANGELOG.md
+  s_8b84d8a3e72784::t_42076bbab9d64b 5,8
+  s_8b84d8a3e72784::t_7c69d411608ff8 6-7
+Resources/安装与使用.txt
+  s_8b84d8a3e72784::t_7c69d411608ff8 10,33-39
+Sources/TapPanel.swift
+  s_8b84d8a3e72784::t_42076bbab9d64b 14,58
+Sources/AppDelegate.swift
+  s_8b84d8a3e72784::t_42076bbab9d64b 30,103,144-158
+  s_8b84d8a3e72784::t_12a91afe7d7ebf 159
+Sources/AccessibilityPermission.swift
+  s_8b84d8a3e72784::t_42076bbab9d64b 6-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "f84c5b647ea24e0cc54ffeb1befced8c11ae2641",
+  "prompts": {},
+  "sessions": {
+    "s_8b84d8a3e72784": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ed22-e61a-7aa1-be46-6666153c521a",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "huangwei <huangwei501@xiaohongshu.com>"
+    }
+  }
+}
