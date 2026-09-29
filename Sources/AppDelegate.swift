@@ -27,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         for (button, action) in [
             (panel.startButton, #selector(start)), (panel.pauseButton, #selector(togglePause)),
             (panel.stopButton, #selector(stop)), (panel.authorizeButton, #selector(authorize)),
+            (panel.permissionHelpButton, #selector(showPermissionHelp)),
             (panel.resetButton, #selector(resetSettings))
         ] { button.target = self; button.action = action }
         runner.canSend = { [weak self] in
@@ -99,7 +100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private func refresh() {
         guard panel != nil else { return }
         let authorized = permissionMonitor.granted
-        panel.permission.stringValue = authorized ? "● 辅助功能已授权" : "● 首次使用需开启辅助功能"
+        panel.permission.stringValue = authorized ? "● 辅助功能已授权" : "● 当前应用未获辅助功能授权"
         panel.permission.textColor = authorized ? .systemTeal : .systemOrange
         panel.status.stringValue = runner.message
         panel.startButton.isEnabled = !runner.hasSession
@@ -139,6 +140,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         runner.pause("已暂停：正在设置权限。")
         AccessibilityPermission.request()
         NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+    }
+    @objc private func showPermissionHelp() {
+        runner.pause("已暂停：正在查看授权帮助。")
+        let alert = NSAlert()
+        alert.messageText = "开关已开启，但仍显示未授权？"
+        alert.informativeText = "更新或重新编译后，系统可能仍保存旧版本的授权。请在辅助功能列表中移除旧的 Bongo Tap 条目，再添加当前运行的应用并开启权限。返回后会自动检测。\n\n当前应用：\n\(Bundle.main.bundlePath)\n\n请勿选择 Bongo Tap Verify；它是另一个应用。"
+        alert.addButton(withTitle: "在 Finder 中显示当前应用")
+        alert.addButton(withTitle: "打开辅助功能设置")
+        alert.addButton(withTitle: "关闭")
+        alert.beginSheetModal(for: window) { [weak self] response in
+            if response == .alertFirstButtonReturn {
+                NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
+            } else if response == .alertSecondButtonReturn {
+                self?.authorize()
+            }
+        }
     }
     @objc private func showWindow() {
         window?.deminiaturize(nil)

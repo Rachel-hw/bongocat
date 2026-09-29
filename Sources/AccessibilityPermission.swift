@@ -3,6 +3,8 @@ import ApplicationServices
 enum AccessibilityPermission {
     /// The permission UI and input gate use the same accessibility trust check.
     /// Never cache a denied result across attempts or show repeated prompts.
+    /// An ad-hoc rebuild can invalidate TCC's old code identity even when its
+    /// settings toggle remains on. Polling cannot repair that authorization.
     static func isGranted() -> Bool { AXIsProcessTrusted() }
 
     static func request() {

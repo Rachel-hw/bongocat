@@ -11,6 +11,7 @@ final class TapPanel: NSView {
     let pauseButton = NSButton(title: "暂停", target: nil, action: nil)
     let stopButton = NSButton(title: "结束本轮", target: nil, action: nil)
     let authorizeButton = NSButton(title: "打开权限设置…", target: nil, action: nil)
+    let permissionHelpButton = NSButton(title: "授权帮助…", target: nil, action: nil)
     let resetButton = NSButton(title: "恢复默认", target: nil, action: nil)
     let finishMode = NSPopUpButton()
     let interval = TapPanel.numberField()
@@ -54,7 +55,7 @@ final class TapPanel: NSView {
         startButton.bezelColor = .systemTeal
         for button in [startButton, pauseButton, stopButton] { button.controlSize = .large }
         let stack = NSStackView(views: [
-            title, subtitle, row([permission, authorizeButton]), separator(),
+            title, subtitle, row([permission, authorizeButton, permissionHelpButton]), separator(),
             row([countLabel, label("次已发送")]), detail, receiver, status,
             row([startButton, pauseButton, stopButton]), separator(),
             row([rhythmHeading, resetButton]),
