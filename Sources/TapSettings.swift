@@ -1,5 +1,10 @@
 import Foundation
 
+enum TapMode: Int, Codable, CaseIterable {
+    case foreground, background
+    var title: String { ["前台模式", "后台模式"][rawValue] }
+}
+
 enum FinishMode: Int, Codable, CaseIterable {
     case count, duration, manual
     var title: String { ["按次数结束", "按时长结束", "手动停止"][rawValue] }
@@ -14,6 +19,7 @@ struct TapSettings: Codable {
     var finishMode = FinishMode.count
     var count = 100
     var minutes = 10
+    var tapMode = TapMode.foreground
     static let hold: TimeInterval = 0.020
 
     var validationError: String? {
@@ -47,5 +53,23 @@ struct TapSettings: Codable {
         if let data = try? JSONEncoder().encode(self) {
             UserDefaults.standard.set(data, forKey: "tapSettings")
         }
+    }
+}
+
+extension TapSettings {
+    /// Old installations have no mode field. Preserve their saved rhythm and
+    /// target, and keep foreground behavior until the user chooses otherwise.
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        intervalMS = try values.decode(Int.self, forKey: .intervalMS)
+        jitterMS = try values.decode(Int.self, forKey: .jitterMS)
+        pausePercent = try values.decode(Int.self, forKey: .pausePercent)
+        pauseMinMS = try values.decode(Int.self, forKey: .pauseMinMS)
+        pauseMaxMS = try values.decode(Int.self, forKey: .pauseMaxMS)
+        finishMode = try values.decode(FinishMode.self, forKey: .finishMode)
+        count = try values.decode(Int.self, forKey: .count)
+        minutes = try values.decode(Int.self, forKey: .minutes)
+        tapMode = try values.decodeIfPresent(TapMode.self, forKey: .tapMode) ?? .foreground
     }
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-private final class FakeTask: ScheduledTask {
+final class FakeTask: ScheduledTask {
     let due: TimeInterval
     let action: () -> Void
     init(due: TimeInterval, action: @escaping () -> Void) { self.due = due; self.action = action }
@@ -8,7 +8,7 @@ private final class FakeTask: ScheduledTask {
     func cancel() {}
 }
 
-private final class FakeClock {
+final class FakeClock {
     var time: TimeInterval = 0
     var tasks: [FakeTask] = []
     func schedule(_ delay: TimeInterval, _ action: @escaping () -> Void) -> ScheduledTask {
@@ -30,30 +30,70 @@ private final class FakeClock {
     }
 }
 
-private final class FakeKeyboard: KeyboardOutput {
+final class FakeKeyboard: KeyboardOutput {
     var down = 0
     var up = 0
     var held = false
     var succeeds = true
+    var prepares = true
+    var healthy = true
+    var isOpen = false
+    var leaked = 0
+    var receiptDelay: TimeInterval? = 0
+    var clock: FakeClock!
+    private var mode = TapMode.foreground
+    private var actual = KeyboardReceipts()
+    private var expected = KeyboardReceipts()
+    private var activation = 0
+    var isHealthy: Bool { isOpen && healthy }
+    var receipts: KeyboardReceipts? { mode == .background ? actual : nil }
+    var awaitingReceipt: Bool { mode == .background && actual != expected }
+
+    func prepare(_ mode: TapMode, resetting: Bool) -> Bool {
+        precondition(!held && !isOpen, "receiver reopened before drain completed")
+        guard prepares else { return false }
+        self.mode = mode
+        if resetting { actual = KeyboardReceipts() }
+        expected = actual
+        activation += 1; isOpen = true
+        return true
+    }
+
+    private func acknowledge(down: Bool) {
+        guard mode == .background else { return }
+        if down { expected.down += 1 } else { expected.up += 1 }
+        guard let delay = receiptDelay else { return }
+        let current = activation
+        let deliver = {
+            guard self.isOpen && self.activation == current else { self.leaked += 1; return }
+            if down { self.actual.down += 1 } else { self.actual.up += 1 }
+        }
+        if delay == 0 { deliver() } else { _ = clock.schedule(delay, deliver) }
+    }
+
     func press() -> Bool {
         precondition(!held, "duplicate key-down without release")
         guard succeeds else { return false }
         down += 1; held = true
+        acknowledge(down: true)
         return true
     }
     func release() {
         precondition(held, "unpaired key-up")
         up += 1; held = false
+        acknowledge(down: false)
     }
+    func close() { precondition(!held, "receiver closed before key-up"); isOpen = false }
 }
 
-private final class Harness {
+final class Harness {
     let clock = FakeClock()
     let keyboard = FakeKeyboard()
     var permission = true
     var focused = true
     var modifiersClear = true
     lazy var runner: TapRunner = {
+        keyboard.clock = clock
         let environment = RunnerEnvironment(now: { self.clock.time }, hasPermission: { self.permission },
                                             modifiersClear: { self.modifiersClear }, schedule: { self.clock.schedule($0, $1) })
         let runner = TapRunner(output: keyboard, environment: environment)
@@ -163,6 +203,7 @@ enum RunnerChecks {
         let invalid = Harness()
         settings.intervalMS = 40; settings.jitterMS = 50
         precondition(!invalid.runner.start(settings) && invalid.keyboard.down == 0)
+        BackgroundChecks.run()
         print("PASS: permission transitions, lifecycle checks and 10,000 timing samples; no real keys.")
     }
 }

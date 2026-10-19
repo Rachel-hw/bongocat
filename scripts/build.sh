@@ -3,7 +3,7 @@ set -euo pipefail
 project_dir="$(cd "$(dirname "$0")/.." && pwd)"
 app_dir="$project_dir/build/Bongo Tap.app"
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources" "$project_dir/build/module-cache" "$project_dir/build/bin"
-sources=("$project_dir"/Sources/*.swift "$project_dir/Tests/RunnerChecks.swift")
+sources=("$project_dir"/Sources/*.swift "$project_dir"/Tests/*.swift)
 python3 "$project_dir/scripts/version.py" check
 python3 -m unittest discover -s "$project_dir/Tests" -p 'test_*.py'
 for arch in arm64 x86_64; do

@@ -27,6 +27,7 @@ final class TapRunner {
     private(set) var sent = 0
     private(set) var released = 0
     private(set) var pauseCount = 0
+    private(set) var isSettling = false
     private(set) var message = "准备好后，开始一轮敲击。"
     private(set) var settings = TapSettings()
     private var timer: ScheduledTask?
@@ -43,7 +44,8 @@ final class TapRunner {
     }
 
     var isActive: Bool { phase == .running || phase == .countdown }
-    var hasSession: Bool { isActive || phase == .paused }
+    var hasSession: Bool { isActive || phase == .paused || isSettling }
+    var receipts: KeyboardReceipts? { output.receipts }
     var elapsed: TimeInterval {
         accumulatedTime + (activeStartedAt.map { environment.now() - $0 } ?? 0)
     }
@@ -57,6 +59,9 @@ final class TapRunner {
         guard environment.hasPermission() else {
             message = "请先开启辅助功能权限。"; onUpdate?(); return false
         }
+        guard output.prepare(settings.tapMode, resetting: true) else {
+            message = "无法启动后台模式，请检查辅助功能权限后重试。"; onUpdate?(); return false
+        }
         self.settings = settings
         sent = 0; released = 0; pauseCount = 0; accumulatedTime = 0
         generation = UUID()
@@ -65,8 +70,11 @@ final class TapRunner {
     }
 
     func resume() {
-        guard phase == .paused else { return }
+        guard phase == .paused, !isSettling else { return }
         guard environment.hasPermission() else { message = "请先开启辅助功能权限。"; onUpdate?(); return }
+        guard output.prepare(settings.tapMode, resetting: false) else {
+            message = "无法恢复后台模式，请检查辅助功能权限后重试。"; onUpdate?(); return
+        }
         generation = UUID()
         countdown(3)
     }
@@ -76,15 +84,18 @@ final class TapRunner {
         cancelPending()
         phase = .paused
         message = reason
-        onUpdate?()
+        drainOutput(until: environment.now() + 0.3)
     }
 
     func stop(_ reason: String = "本轮已结束。") {
         guard hasSession else { return }
+        if isSettling {
+            phase = .finished; message = reason; onUpdate?(); return
+        }
         cancelPending()
         phase = .finished
         message = reason
-        onUpdate?()
+        drainOutput(until: environment.now() + 0.3)
     }
 
     func authorizationDidChange(granted: Bool) {
@@ -94,6 +105,33 @@ final class TapRunner {
             onUpdate?()
         }
         // Restoring permission never resumes a paused run without user action.
+    }
+
+    /// Also checked by the UI heartbeat, including during long random rests.
+    func checkSafety() {
+        guard isActive else { return }
+        if !environment.hasPermission() { pause("已暂停：辅助功能权限不可用。") }
+        else if !output.isHealthy { pause("已暂停：后台接收器已失效，请检查权限后继续。") }
+        else if settings.tapMode == .foreground && !canSend() { pause("已暂停：请将 Bongo Tap 窗口置于前台。") }
+    }
+
+    /// Keep the filter alive until the last matching key-up arrives. Block new
+    /// sessions/resumes during this bounded drain so tags cannot change early.
+    private func drainOutput(until deadline: TimeInterval) {
+        isSettling = output.awaitingReceipt
+        if !isSettling || environment.now() >= deadline {
+            if isSettling { message = "后台事件未完整确认，已停止发送；请检查权限后再试。" }
+            output.close()
+            isSettling = false
+            onUpdate?()
+            return
+        }
+        onUpdate?()
+        let expected = generation
+        timer = environment.schedule(0.01) { [weak self] in
+            guard let self, self.generation == expected else { return }
+            self.drainOutput(until: deadline)
+        }
     }
 
     private func cancelPending() {
@@ -114,22 +152,29 @@ final class TapRunner {
 
     private func countdown(_ seconds: Int) {
         phase = .countdown
-        guard canSend() else { pause("已暂停：请将 Bongo Tap 窗口置于前台。"); return }
+        checkSafety()
+        guard isActive else { return }
         guard seconds > 0 else {
             activeStartedAt = environment.now()
             phase = .running
             press()
             return
         }
-        message = "\(seconds) 秒后开始，请保持窗口在前台。"
+        message = settings.tapMode == .background
+            ? "\(seconds) 秒后开始，可以切换到其他应用。"
+            : "\(seconds) 秒后开始，请保持窗口在前台。"
         onUpdate?()
         later(1) { [weak self] in self?.countdown(seconds - 1) }
     }
 
     private func press() {
-        guard canSend() else { pause("已暂停：切换到了其他窗口。"); return }
-        guard environment.hasPermission() else { pause("已暂停：辅助功能权限不可用。"); return }
-        guard environment.modifiersClear() else { pause("已暂停：请松开修饰键后继续。"); return }
+        checkSafety()
+        guard isActive else { return }
+        // Background F20 is filtered before foreground shortcut handling, so
+        // normal Shift/Command typing must not pause a background session.
+        if settings.tapMode == .foreground && !environment.modifiersClear() {
+            pause("已暂停：请松开修饰键后继续。"); return
+        }
         if settings.finishMode == .count && sent >= settings.count {
             stop("已达到目标次数，本轮完成。"); return
         }
@@ -139,25 +184,37 @@ final class TapRunner {
         let pressedAt = environment.now()
         keyHeld = true
         sent += 1
-        message = "正在敲击，A 键由本窗口接收。"
+        message = settings.tapMode == .background ? "正在后台敲击，可以正常使用其他应用。" : "正在敲击，A 键由本窗口接收。"
         onUpdate?()
         later(TapSettings.hold) { [weak self] in
             guard let self else { return }
             self.releaseKey()
-            if self.settings.finishMode == .count && self.sent == self.settings.count {
-                self.stop("已达到目标次数，本轮完成。")
-                return
-            }
-            if step.pause > 0 {
-                self.pauseCount += 1
-                self.message = String(format: "随机休息 %.1f 秒…", step.pause)
-            }
-            self.onUpdate?()
-            // Do not burst after delayed scheduling. Cap long rests at the
-            // deadline; pause/resume deliberately discards the old pending rest.
-            let delay = max(0.005, step.interval - (self.environment.now() - pressedAt)) + step.pause
-            self.later(min(delay, self.remainingTime)) { [weak self] in self?.press() }
+            self.afterRelease(step: step, pressedAt: pressedAt, deadline: self.environment.now() + 0.3)
         }
+    }
+
+    private func afterRelease(step: (interval: TimeInterval, pause: TimeInterval),
+                              pressedAt: TimeInterval, deadline: TimeInterval) {
+        checkSafety()
+        guard isActive else { return }
+        if output.awaitingReceipt {
+            guard environment.now() < deadline else { pause("已暂停：后台事件确认超时。"); return }
+            later(0.01) { [weak self] in self?.afterRelease(step: step, pressedAt: pressedAt, deadline: deadline) }
+            return
+        }
+        if settings.finishMode == .count && sent == settings.count {
+            stop("已达到目标次数，本轮完成。")
+            return
+        }
+        if step.pause > 0 {
+            pauseCount += 1
+            message = String(format: "随机休息 %.1f 秒…", step.pause)
+        }
+        onUpdate?()
+        // Never catch up in bursts after delayed acknowledgement or scheduling.
+        // Long rests end at the duration deadline; resume discards the old rest.
+        let delay = max(0.005, step.interval - (environment.now() - pressedAt)) + step.pause
+        later(min(delay, remainingTime)) { [weak self] in self?.press() }
     }
 
     private func releaseKey() {

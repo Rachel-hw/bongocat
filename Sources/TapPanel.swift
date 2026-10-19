@@ -14,6 +14,8 @@ final class TapPanel: NSView {
     let permissionHelpButton = NSButton(title: "授权帮助…", target: nil, action: nil)
     let resetButton = NSButton(title: "恢复默认", target: nil, action: nil)
     let finishMode = NSPopUpButton()
+    let tapMode = NSPopUpButton()
+    private let modeHint = NSTextField(wrappingLabelWithString: "")
     let interval = TapPanel.numberField()
     let jitter = TapPanel.numberField()
     let chance = TapPanel.numberField()
@@ -28,10 +30,14 @@ final class TapPanel: NSView {
         let heading = NSTextField(labelWithString: "Bongo Tap")
         heading.font = .systemFont(ofSize: 28, weight: .bold)
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "开发版"
-        let badge = NSTextField(labelWithString: "前台模式 · \(version)")
+        let badge = NSTextField(labelWithString: version)
         badge.textColor = .secondaryLabelColor
         let title = row([heading, badge])
-        let subtitle = label("让小猫继续敲击。保持这个窗口在前台，切换应用时自动暂停。")
+        modeHint.widthAnchor.constraint(equalToConstant: 644).isActive = true
+        modeHint.textColor = .secondaryLabelColor
+        tapMode.addItems(withTitles: TapMode.allCases.map(\.title))
+        tapMode.target = self
+        tapMode.action = #selector(tapModeChanged)
         permission.font = .systemFont(ofSize: 12, weight: .medium)
         countLabel.font = .monospacedDigitSystemFont(ofSize: 54, weight: .semibold)
         countLabel.textColor = .systemTeal
@@ -49,13 +55,14 @@ final class TapPanel: NSView {
         finishMode.target = self
         finishMode.action = #selector(modeChanged)
         let footnote = NSTextField(wrappingLabelWithString:
-            "Esc 暂停 · 每次按住 20ms · 随机休息计入运行时间，手动暂停和倒计时不计入。\n这里显示的是工具发送次数；游戏计数请单独对照。随机节奏不保证无法检测。")
+            "窗口内 Esc 暂停；后台可通过菜单栏爪印暂停或结束。休眠、锁屏时自动暂停。\n随机休息计入运行时间，倒计时和手动暂停不计入。\n这里显示的是工具发送次数；游戏计数请单独对照。随机节奏不保证无法检测。")
         footnote.font = .systemFont(ofSize: 12)
         footnote.textColor = .secondaryLabelColor
         startButton.bezelColor = .systemTeal
         for button in [startButton, pauseButton, stopButton] { button.controlSize = .large }
         let stack = NSStackView(views: [
-            title, subtitle, row([permission, authorizeButton, permissionHelpButton]), separator(),
+            title, row([label("运行方式", width: 72), tapMode]), modeHint,
+            row([permission, authorizeButton, permissionHelpButton]), separator(),
             row([countLabel, label("次已发送")]), detail, receiver, status,
             row([startButton, pauseButton, stopButton]), separator(),
             row([rhythmHeading, resetButton]),
@@ -85,7 +92,9 @@ final class TapPanel: NSView {
                      settings.pauseMinMS, settings.pauseMaxMS, settings.count, settings.minutes])
             .forEach { $0.0.stringValue = String($0.1) }
         finishMode.selectItem(at: settings.finishMode.rawValue)
+        tapMode.selectItem(at: settings.tapMode.rawValue)
         modeChanged()
+        tapModeChanged()
     }
 
     func readSettings() -> TapSettings? {
@@ -98,12 +107,14 @@ final class TapPanel: NSView {
         return TapSettings(intervalMS: values[0], jitterMS: values[1], pausePercent: values[2],
                            pauseMinMS: values[3], pauseMaxMS: values[4],
                            finishMode: FinishMode(rawValue: finishMode.indexOfSelectedItem) ?? .count,
-                           count: values[5], minutes: values[6])
+                           count: values[5], minutes: values[6],
+                           tapMode: TapMode(rawValue: tapMode.indexOfSelectedItem) ?? .foreground)
     }
 
     func lockSettings(_ locked: Bool) {
         for field in fields { field.isEnabled = !locked }
         finishMode.isEnabled = !locked
+        tapMode.isEnabled = !locked
         resetButton.isEnabled = !locked
         if !locked { modeChanged() }
     }
@@ -111,6 +122,12 @@ final class TapPanel: NSView {
     @objc private func modeChanged() {
         targetCount.isEnabled = finishMode.indexOfSelectedItem == FinishMode.count.rawValue
         minutes.isEnabled = finishMode.indexOfSelectedItem == FinishMode.duration.rawValue
+    }
+
+    @objc private func tapModeChanged() {
+        modeHint.stringValue = tapMode.indexOfSelectedItem == TapMode.background.rawValue
+            ? "可以切换应用或最小化窗口，边使用电脑边让小猫敲击。关闭窗口会结束本轮。"
+            : "保持 Bongo Tap 窗口在前台；切换应用或最小化时自动暂停。"
     }
 
     private static func numberField() -> NSTextField {
