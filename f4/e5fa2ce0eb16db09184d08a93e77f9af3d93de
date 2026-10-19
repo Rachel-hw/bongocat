@@ -1,0 +1,62 @@
+Experiments/BackgroundProbe/ProbeSession.swift
+  s_8b84d8a3e72784::t_7ebf9f21ef3f6d 1-105
+Experiments/BackgroundProbe/LabDelegate.swift
+  s_8b84d8a3e72784::t_6faa67a2079622 1-152
+Tests/BackgroundChecks.swift
+  s_8b84d8a3e72784::t_f3d1838f6eb885 115-118
+  s_8b84d8a3e72784::t_d7d5b0e12bb13f 1-114,119-126
+Resources/安装与使用.txt
+  s_8b84d8a3e72784::t_27815e518ec7f1 1,11,18-20,22,28-29,35-36
+Experiments/BackgroundProbe/ReceiverDelegate.swift
+  s_8b84d8a3e72784::t_6faa67a2079622 1-60
+Experiments/BackgroundProbe/main.swift
+  s_8b84d8a3e72784::t_6faa67a2079622 1-11
+Sources/BackgroundEventFilter.swift
+  s_8b84d8a3e72784::t_677d0e9c35df17 1-41,43-64
+  s_8b84d8a3e72784::t_0e4387b5d11a94 42
+scripts/build-background-probe.sh
+  s_8b84d8a3e72784::t_6faa67a2079622 1-34
+Sources/TapRunner.swift
+  s_8b84d8a3e72784::t_2d4dd80eebc882 30,47-48,62-64,73,75-77,87,92-94,98,110-136,155-156,163-165,171-177,187,192-203,205-217
+scripts/build.sh
+  s_8b84d8a3e72784::t_d7d5b0e12bb13f 6
+README.md
+  s_8b84d8a3e72784::t_27815e518ec7f1 12-13,30-36,41-42,46-50,64-65
+Experiments/BackgroundProbe/README.md
+  s_8b84d8a3e72784::t_27815e518ec7f1 1-33
+Sources/KeyboardOutput.swift
+  s_8b84d8a3e72784::t_677d0e9c35df17 4-7,10,18-35,38-41,44,48,54-56,59-61
+CHANGELOG.md
+  s_8b84d8a3e72784::t_27815e518ec7f1 5-9
+Sources/TapPanel.swift
+  s_8b84d8a3e72784::t_0e4387b5d11a94 17-18,33,36-40,58,64-65,95,97,110-111,117,127-130
+  s_8b84d8a3e72784::t_5d6600e80ca5a4 131-132
+Experiments/BackgroundProbe/ProbeChecks.swift
+  s_8b84d8a3e72784::t_7ebf9f21ef3f6d 1,3-50
+  s_8b84d8a3e72784::t_800a485c2d9c02 2
+Sources/TapSettings.swift
+  s_8b84d8a3e72784::t_677d0e9c35df17 3-7,22,58-73,75
+  s_8b84d8a3e72784::t_e63ec02330addc 74
+Experiments/BackgroundProbe/ProbeTransport.swift
+  s_8b84d8a3e72784::t_7ebf9f21ef3f6d 1-86
+Sources/AppDelegate.swift
+  s_8b84d8a3e72784::t_0e4387b5d11a94 12-13,18-19,25,62,82,84,87,91-92,105-109,118,120,123-125,128-142,165,180,198-209,215
+Tests/RunnerChecks.swift
+  s_8b84d8a3e72784::t_d7d5b0e12bb13f 3,11,33,38-73,78,84,86,89,96,206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "f4e5fa2ce0eb16db09184d08a93e77f9af3d93de",
+  "prompts": {},
+  "sessions": {
+    "s_8b84d8a3e72784": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ed22-e61a-7aa1-be46-6666153c521a",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "huangwei <huangwei501@xiaohongshu.com>"
+    }
+  }
+}
